@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Travel Booking – Payment</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#f5f7fb;color:#222;padding-bottom:40px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.header-left{display:flex;align-items:center;gap:10px}
+.back-btn{padding:4px 8px;border:none;border-radius:6px;background:#e1ecff;color:#007bff;font-size:18px;cursor:pointer}
+.back-btn:hover{background:#c7ddff}
+.logo-title{font-size:22px;font-weight:bold;color:#007bff}
+.header-right{font-size:14px;font-weight:bold}
+.main{padding:20px}
+.page-title{font-size:22px;font-weight:bold;margin-bottom:15px}
+.wrapper{display:flex;flex-wrap:wrap;gap:20px}
+.summary-card,.payment-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.1);flex:1 1 260px;min-width:260px}
+.summary-title{font-size:18px;font-weight:bold;margin-bottom:8px}
+.summary-row{margin-bottom:6px;font-size:14px}
+.summary-row b{color:#000}
+.passenger-list{padding-left:16px;margin-top:8px}
+.passenger-list li{font-size:13px;margin-bottom:4px}
+.price-main{font-size:20px;font-weight:bold;color:#007bff;margin-top:10px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:14px;margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;font-size:14px}
+button.primary{width:100%;padding:10px;border:none;border-radius:8px;background:#007bff;color:#fff;font-size:16px;cursor:pointer;margin-top:10px}
+button.primary:hover{background:#005fcc}
+.method-section{background:#f3f6ff;padding:12px;border:1px dashed #aac3ff;border-radius:8px;margin-bottom:10px}
+.qr-box{width:170px;height:170px;border:2px solid #007bff;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;margin-top:10px;font-size:14px}
+.error{color:red;font-size:13px;margin-top:6px}
+.loader{border:6px solid #e0e0e0;border-top:6px solid #007bff;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;margin:0 auto}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-left">
+    <button class="back-btn" onclick="window.location.href='booking.html'">&#8592;</button>
+    <div class="logo-title">Travel Booking</div>
+  </div>
+  <div class="header-right">Payment Page</div>
+</header>
+<main class="main">
+<h1 class="page-title">Payment</h1>
+<div id="emptyState" style="display:none;text-align:center;font-size:18px;margin-top:30px;">
+  No pending booking found. <a href="home.html">Go Home</a>
+</div>
+<div id="paymentSection" class="wrapper" style="display:none;">
+  <div class="summary-card" id="bookingSummary"></div>
+  <div class="payment-card">
+    <div class="summary-title">Complete Payment</div>
+    <form id="paymentForm">
+      <div class="form-group">
+        <label>Select Payment Method</label>
+        <select id="method">
+          <option value="">Select</option>
+          <option value="UPI">UPI</option>
+          <option value="Card">Card</option>
+          <option value="NetBanking">Net Banking</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Transaction ID</label>
+        <input type="text" id="txnId" placeholder="e.g. AXI1298324093">
+      </div>
+      <div id="upiSection" class="method-section" style="display:none;">
+        <b>UPI Payment</b>
+        <div class="qr-box">Scan QR and Pay</div>
+        <div class="form-group" style="margin-top:10px;">
+          <label>Your UPI ID</label>
+          <input type="text" id="upiId" placeholder="yourupi@bank">
+        </div>
+      </div>
+      <div id="cardSection" class="method-section" style="display:none;">
+        <b>Card Payment</b>
+        <div class="form-group" style="margin-top:10px;">
+          <label>Name on Card</label>
+          <input type="text" id="cardName">
+        </div>
+        <div class="form-group">
+          <label>Card Number</label>
+          <input type="text" id="cardNumber" maxlength="16">
+        </div>
+        <div class="form-group">
+          <label>Expiry</label>
+          <input type="text" id="cardExpiry" maxlength="5" placeholder="MM/YY">
+        </div>
+        <div class="form-group">
+          <label>CVV</label>
+          <input type="password" id="cardCvv" maxlength="3">
+        </div>
+      </div>
+      <div id="netSection" class="method-section" style="display:none;">
+        <b>Net Banking</b>
+        <div class="form-group" style="margin-top:10px;">
+          <label>Select Bank</label>
+          <select id="netBank">
+            <option value="">Select Bank</option>
+            <option value="SBI">SBI</option>
+            <option value="HDFC">HDFC</option>
+            <option value="ICICI">ICICI</option>
+            <option value="AXIS">AXIS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>User ID</label>
+          <input type="text" id="netUser">
+        </div>
+      </div>
+      <div id="msgBox" class="error"></div>
+      <button class="primary" type="submit">Pay Now</button>
+    </form>
+  </div>
+</div>
+</main>
+<script>
+let pending=null;
+let breakdown=null;
+function loadPending(){
+  let data=localStorage.getItem("pendingBooking");
+  if(!data){
+    document.getElementById("emptyState").style.display="block";
+    return;
+  }
+  pending=JSON.parse(data);
+  document.getElementById("paymentSection").style.display="flex";
+  let j=pending.journey;
+  let base=pending.totalPrice;
+  let gst=Math.round(base*0.05);
+  let serviceCharge=30*pending.totalPassengers;
+  let bookingFee=20;
+  let other=15;
+  let total=base+gst+serviceCharge+bookingFee+other;
+  breakdown={base,gst,serviceCharge,bookingFee,other,total};
+  let passengers=pending.passengers.map((p,i)=>`<li>${i+1}. ${p.name} (${p.age}, ${p.gender}) – ${p.seat}</li>`).join("");
+  document.getElementById("bookingSummary").innerHTML=`
+    <div class="summary-title">${j.from} → ${j.to}</div>
+    <div class="summary-row"><b>Vehicle:</b> ${j.vehicleNo}</div>
+    <div class="summary-row"><b>Mode:</b> ${j.type}</div>
+    <div class="summary-row"><b>Date:</b> ${j.date}</div>
+    <div class="summary-row"><b>Time:</b> ${j.time}</div>
+    <div class="summary-row"><b>Passengers:</b> ${pending.totalPassengers}</div>
+    <ul class="passenger-list">${passengers}</ul>
+    <hr style="margin:10px 0;">
+    <div class="summary-row"><b>Base Fare:</b> ₹${base}</div>
+    <div class="summary-row"><b>GST:</b> ₹${gst}</div>
+    <div class="summary-row"><b>Service Charge:</b> ₹${serviceCharge}</div>
+    <div class="summary-row"><b>Booking Fee:</b> ₹${bookingFee}</div>
+    <div class="summary-row"><b>Other Charges:</b> ₹${other}</div>
+    <div class="price-main">Total: ₹${total}</div>
+  `;
+}
+document.getElementById("method").addEventListener("change",function(){
+  document.getElementById("upiSection").style.display="none";
+  document.getElementById("cardSection").style.display="none";
+  document.getElementById("netSection").style.display="none";
+  if(this.value==="UPI")document.getElementById("upiSection").style.display="block";
+  if(this.value==="Card")document.getElementById("cardSection").style.display="block";
+  if(this.value==="NetBanking")document.getElementById("netSection").style.display="block";
+});
+document.getElementById("paymentForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  let msg=document.getElementById("msgBox");
+  msg.textContent="";
+  if(!pending || !breakdown){
+    msg.textContent="No pending booking.";
+    return;
+  }
+  let method=document.getElementById("method").value;
+  let txnId=document.getElementById("txnId").value.trim();
+  if(!method){
+    msg.textContent="Select payment method.";
+    return;
+  }
+  if(!txnId){
+    msg.textContent="Enter Transaction ID.";
+    return;
+  }
+  if(method==="UPI"){
+    if(!document.getElementById("upiId").value.trim()){
+      msg.textContent="Enter your UPI ID.";
+      return;
+    }
+  }else if(method==="Card"){
+    if(!document.getElementById("cardName").value.trim()||
+       !document.getElementById("cardNumber").value.trim()||
+       !document.getElementById("cardExpiry").value.trim()||
+       !document.getElementById("cardCvv").value.trim()){
+      msg.textContent="Enter complete card details.";
+      return;
+    }
+  }else if(method==="NetBanking"){
+    if(!document.getElementById("netBank").value||
+       !document.getElementById("netUser").value.trim()){
+      msg.textContent="Enter bank details.";
+      return;
+    }
+  }
+  let bookingId="BK"+Date.now();
+  let finalBooking={
+    bookingId,
+    txnId,
+    ...pending,
+    paymentMethod:method,
+    totalPaid:breakdown.total,
+    status:"success",
+    date:new Date().toISOString()
+  };
+  let all=JSON.parse(localStorage.getItem("bookings")||"[]");
+  all.push(finalBooking);
+  localStorage.setItem("bookings",JSON.stringify(all));
+  localStorage.removeItem("pendingBooking");
+  // show processing animation
+  const card=document.querySelector(".payment-card");
+  card.innerHTML=`
+    <div style="text-align:center;padding:40px 20px;">
+      <div class="loader"></div>
+      <h2 id="processText" style="margin-top:20px;color:#007bff;font-size:20px;">
+        Processing payment...
+      </h2>
+    </div>
+  `;
+  setTimeout(()=>{document.getElementById("processText").textContent="Verifying transaction...";},1200);
+  setTimeout(()=>{document.getElementById("processText").textContent="Confirming with bank...";},2500);
+  setTimeout(()=>{document.getElementById("processText").textContent="Finalizing booking...";},3800);
+  setTimeout(()=>{
+    alert("Payment Successful!\nBooking ID: "+bookingId);
+    window.location.href="home.html";
+  },5000);
+});
+loadPending();
+</script>
+</body>
+</html>

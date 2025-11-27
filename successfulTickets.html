@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Travel Booking – Successful Tickets</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#f5f7fb;color:#222;padding-bottom:50px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#ffffff;box-shadow:0 2px 4px rgba(0,0,0,0.1);position:sticky;top:0;z-index:10}
+.header-left{display:flex;align-items:center;gap:10px}
+.back-btn{padding:4px 8px;border:none;border-radius:6px;background:#e1ecff;color:#007bff;font-size:18px;cursor:pointer}
+.back-btn:hover{background:#c7ddff}
+.logo-title{font-size:22px;font-weight:bold;color:#007bff}
+.main{padding:20px}
+.page-title{font-size:22px;font-weight:bold;margin-bottom:12px}
+.info-text{font-size:13px;color:#555;margin-bottom:16px}
+.cards{display:flex;flex-direction:column;gap:12px}
+.card{background:#ffffff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08);padding:12px 14px}
+.row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.route{font-size:16px;font-weight:bold}
+.badge-success{font-size:11px;padding:3px 7px;border-radius:999px;background:#e3f7e8;color:#1e8841}
+.sub-row{font-size:13px;margin-bottom:3px}
+.label{font-weight:bold}
+.footer-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:13px}
+.price{font-size:15px;font-weight:bold;color:#007bff}
+.empty{text-align:center;margin-top:40px;font-size:15px;color:#666}
+.footer{position:fixed;bottom:0;left:0;width:100%;background:#ffffff;text-align:center;padding:8px 10px;font-size:13px;box-shadow:0 -1px 4px rgba(0,0,0,0.15)}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-left">
+    <button class="back-btn" onclick="window.location.href='home.html'">&#8592;</button>
+    <div class="logo-title">Travel Booking</div>
+  </div>
+</header>
+<main class="main">
+  <h1 class="page-title">Successful Tickets</h1>
+  <p class="info-text">All tickets with successful payment are shown here, including completed journeys and upcoming trips.</p>
+  <div id="ticketsContainer" class="cards"></div>
+  <div id="emptyMsg" class="empty" style="display:none;">No successful tickets yet.</div>
+</main>
+<footer class="footer">
+  © 2025 Travel Booking. All rights reserved.
+</footer>
+<script>
+function formatDateTime(iso){
+  if(!iso)return "-";
+  const d=new Date(iso);
+  if(isNaN(d.getTime()))return iso;
+  const dd=String(d.getDate()).padStart(2,"0");
+  const mm=String(d.getMonth()+1).padStart(2,"0");
+  const yyyy=d.getFullYear();
+  const hh=String(d.getHours()).padStart(2,"0");
+  const mi=String(d.getMinutes()).padStart(2,"0");
+  return dd+"-"+mm+"-"+yyyy+" "+hh+":"+mi;
+}
+function loadTickets(){
+  const all=JSON.parse(localStorage.getItem("bookings")||"[]");
+  const list=all.filter(b=>(b.status||"").toLowerCase()==="success"|| (b.status||"").toLowerCase()==="successful");
+  const container=document.getElementById("ticketsContainer");
+  const emptyMsg=document.getElementById("emptyMsg");
+  container.innerHTML="";
+  if(list.length===0){
+    emptyMsg.style.display="block";
+    return;
+  }
+  emptyMsg.style.display="none";
+  list.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+  list.forEach(b=>{
+    const j=b.journey||{};
+    const passengers=(b.passengers||[]).length||b.totalPassengers||1;
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`
+      <div class="row-top">
+        <div class="route">${(j.from||"?")} → ${(j.to||"?")}</div>
+        <span class="badge-success">Successful</span>
+      </div>
+      <div class="sub-row"><span class="label">Booking ID:</span> ${b.bookingId||"-"}</div>
+      <div class="sub-row"><span class="label">Mode:</span> ${j.type||"-"} &nbsp; | &nbsp; <span class="label">Vehicle:</span> ${j.vehicleNo||"-"}</div>
+      <div class="sub-row"><span class="label">Journey Date:</span> ${j.date||"-"} &nbsp; <span class="label">Time:</span> ${j.time||"-"}</div>
+      <div class="sub-row"><span class="label">Passengers:</span> ${passengers}</div>
+      <div class="sub-row"><span class="label">Transaction ID:</span> ${b.txnId||"-"}</div>
+      <div class="footer-row">
+        <span>Booked on: ${formatDateTime(b.date)}</span>
+        <span class="price">₹${b.totalPaid||b.totalPrice||"-"}</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+loadTickets();
+</script>
+</body>
+</html>

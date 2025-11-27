@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Travel Booking – Home</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#f5f7fb;color:#222;padding-bottom:60px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#ffffff;box-shadow:0 2px 4px rgba(0,0,0,0.1);position:sticky;top:0;z-index:10}
+.header-left{display:flex;align-items:center;gap:10px}
+.menu-icon{font-size:22px;cursor:pointer;padding:6px 10px;border-radius:6px}
+.menu-icon:hover{background:#e6f0ff}
+.logo-title{font-size:22px;font-weight:bold;color:#007bff}
+.header-right{display:flex;align-items:center;gap:8px}
+.username{font-size:14px;font-weight:bold}
+.user-icon{width:32px;height:32px;border-radius:50%;background:#007bff;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer}
+.main{padding:20px}
+.section-title{font-size:22px;font-weight:bold;margin-bottom:10px}
+.chip-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.chip{padding:6px 14px;border-radius:999px;border:none;background:#e1ecff;color:#007bff;font-size:14px;cursor:pointer}
+.chip.active,.chip:hover{background:#007bff;color:#fff}
+.search-box{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:25px;background:#ffffff;padding:12px 15px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+.search-box input,.search-box button{padding:8px 10px;border-radius:6px;border:1px solid #ccc;font-size:14px}
+.search-box input{flex:1 1 150px}
+.search-box button{border:none;background:#007bff;color:#fff;cursor:pointer;flex:0 0 90px}
+.search-box button:hover{background:#005fcc}
+.cards-title{font-size:22px;font-weight:bold;margin-bottom:10px}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.card{background:#ffffff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:0.2s}
+.card:hover{transform:scale(1.02);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.card-header{height:150px;background:#dfe9ff;display:flex;align-items:center;justify-content:center;font-size:40px}
+.card-body{padding:12px 16px;flex:1}
+.route{font-size:16px;font-weight:bold;margin-bottom:4px}
+.sub-text{font-size:13px;color:#555;margin-bottom:4px}
+.sub-text b{color:#000}
+.price{font-size:18px;font-weight:bold;color:#007bff;margin-top:6px}
+.card-footer{padding:12px 16px}
+.card-footer button{width:100%;padding:10px;border:none;border-radius:8px;background:#007bff;color:#fff;font-size:15px;cursor:pointer}
+.card-footer button:hover{background:#005fcc}
+.no-results{text-align:center;margin-top:30px;font-size:15px;color:#666}
+.pagination{display:flex;justify-content:center;gap:6px;margin:18px 0 8px}
+.page-btn{min-width:28px;padding:6px 10px;border-radius:6px;border:1px solid #007bff;background:#fff;color:#007bff;font-size:13px;cursor:pointer}
+.page-btn.active{background:#007bff;color:#fff}
+.side-menu{position:fixed;top:0;left:-260px;width:240px;height:100%;background:#ffffff;box-shadow:2px 0 8px rgba(0,0,0,0.2);padding:15px;transition:left 0.25s ease;z-index:20}
+.side-menu.open{left:0}
+.side-menu h3{margin-bottom:10px;color:#007bff}
+.side-section{margin-bottom:15px}
+.side-section h4{font-size:15px;margin-bottom:4px}
+.side-section p{font-size:13px;color:#444}
+.side-btn{margin-top:6px;width:100%;padding:8px;border-radius:6px;border:none;background:#007bff;color:#fff;font-size:13px;cursor:pointer}
+.side-btn:hover{background:#005fcc}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.25);display:none;z-index:15}
+.overlay.show{display:block}
+.user-popup{position:absolute;top:48px;right:15px;background:#ffffff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.2);padding:10px 14px;font-size:13px;display:none;min-width:170px}
+.user-popup.show{display:block}
+.user-popup div{margin-bottom:4px}
+.footer{position:fixed;bottom:0;left:0;width:100%;background:#ffffff;text-align:center;padding:8px 10px;font-size:13px;box-shadow:0 -1px 4px rgba(0,0,0,0.15);z-index:12}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay"></div>
+<div class="side-menu" id="sideMenu">
+<h3>Menu</h3>
+<div class="side-section">
+<h4>Ordered Tickets</h4>
+<p id="orderedInfo">No tickets ordered yet.</p>
+<button class="side-btn" id="orderedBtn">View Ordered Tickets</button>
+</div>
+<div class="side-section">
+<h4>Successful Tickets</h4>
+<p id="successInfo">No successful tickets yet.</p>
+<button class="side-btn" id="successBtn">View Successful Tickets</button>
+</div>
+</div>
+<header class="header">
+<div class="header-left">
+<div class="menu-icon" id="menuBtn">&#9776;</div>
+<div class="logo-title">Travel Booking</div>
+</div>
+<div class="header-right">
+<span class="username" id="usernameText">Guest</span>
+<div class="user-icon" id="userIcon">U</div>
+<div class="user-popup" id="userPopup">
+<div id="userNameDetail">Name: Guest</div>
+<div id="userEmailDetail">Email: -</div>
+</div>
+</div>
+</header>
+<main class="main">
+<section>
+<div class="section-title">Modes</div>
+<div class="chip-row">
+<button class="chip active" data-type="all">All</button>
+<button class="chip" data-type="Train">Train</button>
+<button class="chip" data-type="Bus">Bus</button>
+<button class="chip" data-type="Flight">Flight</button>
+</div>
+</section>
+<section>
+<div class="section-title">Search Journey</div>
+<form class="search-box" id="searchForm">
+<input type="text" id="fromInput" placeholder="From (e.g. Hyderabad)">
+<input type="text" id="toInput" placeholder="To (e.g. Chennai)">
+<input type="date" id="dateInput">
+<button type="submit">Search</button>
+</form>
+</section>
+<section>
+<div class="cards-title">Available Journeys</div>
+<div class="cards-grid" id="cardsContainer"></div>
+<div class="no-results" id="noResults" style="display:none;">No journeys found for selected criteria.</div>
+<div class="pagination" id="pagination"></div>
+</section>
+</main>
+<footer class="footer">
+© 2025 Travel Booking. All rights reserved.
+</footer>
+<script>
+const journeys=[
+  {id:1,type:"Train",vehicleNo:"TR12723",from:"Hyderabad",to:"Chennai",date:"2025-12-01",time:"18:00",operator:"Charminar Express",price:850,seatsLeft:32},
+  {id:2,type:"Train",vehicleNo:"TR12615",from:"Hyderabad",to:"Bengaluru",date:"2025-12-02",time:"20:30",operator:"Kacheguda Exp",price:780,seatsLeft:20},
+  {id:3,type:"Train",vehicleNo:"TR12839",from:"Chennai",to:"Bengaluru",date:"2025-12-03",time:"09:10",operator:"Shatabdi Express",price:980,seatsLeft:5},
+  {id:4,type:"Train",vehicleNo:"TR12295",from:"Delhi",to:"Mumbai",date:"2025-12-04",time:"06:45",operator:"Rajdhani Express",price:2100,seatsLeft:18},
+  {id:5,type:"Train",vehicleNo:"TR12430",from:"Mumbai",to:"Delhi",date:"2025-12-05",time:"16:20",operator:"Rajdhani Express",price:2150,seatsLeft:22},
+  {id:6,type:"Train",vehicleNo:"TR17015",from:"Hyderabad",to:"Pune",date:"2025-12-01",time:"22:15",operator:"Hyderabad Exp",price:650,seatsLeft:14},
+  {id:7,type:"Train",vehicleNo:"TR11020",from:"Pune",to:"Mumbai",date:"2025-12-02",time:"07:30",operator:"Konark Express",price:420,seatsLeft:40},
+  {id:8,type:"Train",vehicleNo:"TR16382",from:"Bengaluru",to:"Kochi",date:"2025-12-06",time:"19:00",operator:"Island Express",price:780,seatsLeft:26},
+  {id:9,type:"Train",vehicleNo:"TR12214",from:"Delhi",to:"Lucknow",date:"2025-12-03",time:"08:10",operator:"Shatabdi Express",price:1150,seatsLeft:12},
+  {id:10,type:"Train",vehicleNo:"TR12655",from:"Chennai",to:"Hyderabad",date:"2025-12-04",time:"21:40",operator:"Navjeevan Express",price:890,seatsLeft:17},
+  {id:11,type:"Train",vehicleNo:"TR12952",from:"Mumbai",to:"Jaipur",date:"2025-12-07",time:"17:25",operator:"Rajdhani Express",price:1950,seatsLeft:9},
+  {id:12,type:"Train",vehicleNo:"TR12987",from:"Jaipur",to:"Delhi",date:"2025-12-08",time:"06:15",operator:"Double Decker",price:760,seatsLeft:30},
+  {id:13,type:"Train",vehicleNo:"TR18610",from:"Kolkata",to:"Ranchi",date:"2025-12-09",time:"11:20",operator:"Intercity Express",price:520,seatsLeft:25},
+  {id:14,type:"Train",vehicleNo:"TR12488",from:"Delhi",to:"Chandigarh",date:"2025-12-05",time:"13:45",operator:"Shatabdi Express",price:840,seatsLeft:15},
+  {id:15,type:"Train",vehicleNo:"TR12138",from:"Pune",to:"Nagpur",date:"2025-12-06",time:"20:00",operator:"Nagpur Express",price:1050,seatsLeft:10},
+  {id:16,type:"Train",vehicleNo:"TR15027",from:"Lucknow",to:"Delhi",date:"2025-12-07",time:"18:40",operator:"Mail Express",price:690,seatsLeft:27},
+  {id:17,type:"Train",vehicleNo:"TR22890",from:"Ranchi",to:"Kolkata",date:"2025-12-08",time:"05:30",operator:"Superfast Express",price:610,seatsLeft:21},
+  {id:18,type:"Train",vehicleNo:"TR13245",from:"Patna",to:"Delhi",date:"2025-12-09",time:"19:50",operator:"Patna Express",price:1350,seatsLeft:13},
+  {id:19,type:"Train",vehicleNo:"TR17320",from:"Bengaluru",to:"Hyderabad",date:"2025-12-10",time:"22:05",operator:"Mail Express",price:820,seatsLeft:16},
+  {id:20,type:"Train",vehicleNo:"TR17616",from:"Hyderabad",to:"Vijayawada",date:"2025-12-11",time:"07:25",operator:"Intercity Express",price:450,seatsLeft:33},
+  {id:21,type:"Bus",vehicleNo:"BS7845",from:"Hyderabad",to:"Bengaluru",date:"2025-12-01",time:"21:30",operator:"Orange Travels",price:1200,seatsLeft:9},
+  {id:22,type:"Bus",vehicleNo:"BS5520",from:"Hyderabad",to:"Vijayawada",date:"2025-12-02",time:"22:15",operator:"TSRTC",price:550,seatsLeft:18},
+  {id:23,type:"Bus",vehicleNo:"BS6691",from:"Hyderabad",to:"Chennai",date:"2025-12-03",time:"19:45",operator:"KPN Travels",price:1350,seatsLeft:11},
+  {id:24,type:"Bus",vehicleNo:"BS9921",from:"Bengaluru",to:"Pune",date:"2025-12-04",time:"20:45",operator:"VRL Travels",price:1600,seatsLeft:12},
+  {id:25,type:"Bus",vehicleNo:"BS3310",from:"Bengaluru",to:"Hyderabad",date:"2025-12-05",time:"22:00",operator:"SRS Travels",price:1150,seatsLeft:14},
+  {id:26,type:"Bus",vehicleNo:"BS7712",from:"Chennai",to:"Bengaluru",date:"2025-12-06",time:"23:00",operator:"Parveen Travels",price:900,seatsLeft:20},
+  {id:27,type:"Bus",vehicleNo:"BS4488",from:"Chennai",to:"Madurai",date:"2025-12-07",time:"21:00",operator:"TNSTC",price:700,seatsLeft:28},
+  {id:28,type:"Bus",vehicleNo:"BS8205",from:"Pune",to:"Mumbai",date:"2025-12-01",time:"18:30",operator:"MSRTC",price:550,seatsLeft:24},
+  {id:29,type:"Bus",vehicleNo:"BS9033",from:"Mumbai",to:"Goa",date:"2025-12-02",time:"20:15",operator:"Neeta Travels",price:1400,seatsLeft:17},
+  {id:30,type:"Bus",vehicleNo:"BS6129",from:"Goa",to:"Mumbai",date:"2025-12-03",time:"19:30",operator:"VRL Travels",price:1380,seatsLeft:10},
+  {id:31,type:"Bus",vehicleNo:"BS7344",from:"Delhi",to:"Jaipur",date:"2025-12-04",time:"17:00",operator:"RSRTC",price:650,seatsLeft:31},
+  {id:32,type:"Bus",vehicleNo:"BS1876",from:"Jaipur",to:"Delhi",date:"2025-12-05",time:"18:30",operator:"RSRTC",price:640,seatsLeft:27},
+  {id:33,type:"Bus",vehicleNo:"BS5077",from:"Delhi",to:"Chandigarh",date:"2025-12-06",time:"07:00",operator:"HRTC",price:780,seatsLeft:19},
+  {id:34,type:"Bus",vehicleNo:"BS9211",from:"Chandigarh",to:"Manali",date:"2025-12-07",time:"20:00",operator:"HRTC Volvo",price:1550,seatsLeft:8},
+  {id:35,type:"Bus",vehicleNo:"BS3259",from:"Kolkata",to:"Durgapur",date:"2025-12-08",time:"16:30",operator:"WBSTC",price:400,seatsLeft:29},
+  {id:36,type:"Bus",vehicleNo:"BS6642",from:"Nagpur",to:"Hyderabad",date:"2025-12-09",time:"21:15",operator:"Neeta Travels",price:1300,seatsLeft:13},
+  {id:37,type:"Bus",vehicleNo:"BS4470",from:"Hyderabad",to:"Tirupati",date:"2025-12-10",time:"22:45",operator:"APSRTC",price:980,seatsLeft:16},
+  {id:38,type:"Bus",vehicleNo:"BS8899",from:"Bengaluru",to:"Tirupati",date:"2025-12-11",time:"23:10",operator:"SRS Travels",price:870,seatsLeft:21},
+  {id:39,type:"Bus",vehicleNo:"BS2308",from:"Pune",to:"Hyderabad",date:"2025-12-12",time:"19:40",operator:"Orange Travels",price:1250,seatsLeft:15},
+  {id:40,type:"Bus",vehicleNo:"BS1199",from:"Hyderabad",to:"Pune",date:"2025-12-13",time:"20:20",operator:"VRL Travels",price:1275,seatsLeft:18},
+  {id:41,type:"Flight",vehicleNo:"FL6E321",from:"Hyderabad",to:"Delhi",date:"2025-12-01",time:"07:15",operator:"IndiGo",price:4500,seatsLeft:18},
+  {id:42,type:"Flight",vehicleNo:"FLAI512",from:"Hyderabad",to:"Mumbai",date:"2025-12-02",time:"16:20",operator:"Air India",price:4200,seatsLeft:4},
+  {id:43,type:"Flight",vehicleNo:"FLUK801",from:"Delhi",to:"London",date:"2025-12-10",time:"02:00",operator:"Vistara",price:52000,seatsLeft:9},
+  {id:44,type:"Flight",vehicleNo:"FL6E789",from:"Bengaluru",to:"Hyderabad",date:"2025-12-03",time:"12:30",operator:"IndiGo",price:3200,seatsLeft:15},
+  {id:45,type:"Flight",vehicleNo:"FLAI204",from:"Delhi",to:"Mumbai",date:"2025-12-04",time:"09:45",operator:"Air India",price:4800,seatsLeft:20},
+  {id:46,type:"Flight",vehicleNo:"FLSG330",from:"Chennai",to:"Delhi",date:"2025-12-05",time:"06:55",operator:"SpiceJet",price:5100,seatsLeft:12},
+  {id:47,type:"Flight",vehicleNo:"FLI5210",from:"Kolkata",to:"Mumbai",date:"2025-12-06",time:"14:10",operator:"IndiGo",price:5700,seatsLeft:10},
+  {id:48,type:"Flight",vehicleNo:"FLGO441",from:"Mumbai",to:"Goa",date:"2025-12-07",time:"11:25",operator:"GoFirst",price:3900,seatsLeft:7},
+  {id:49,type:"Flight",vehicleNo:"FLUK122",from:"Bengaluru",to:"Kolkata",date:"2025-12-08",time:"20:15",operator:"Vistara",price:6200,seatsLeft:14},
+  {id:50,type:"Flight",vehicleNo:"FLAI777",from:"Delhi",to:"Hyderabad",date:"2025-12-09",time:"19:05",operator:"Air India",price:4600,seatsLeft:11}
+];
+let activeType="all";
+let filteredJourneys=journeys.slice();
+const pageSize=9;
+let currentPage=1;
+function renderJourneys(){
+  const container=document.getElementById("cardsContainer");
+  const noResults=document.getElementById("noResults");
+  container.innerHTML="";
+  if(filteredJourneys.length===0){
+    noResults.style.display="block";
+    document.getElementById("pagination").innerHTML="";
+    return;
+  }
+  noResults.style.display="none";
+  const start=(currentPage-1)*pageSize;
+  const end=start+pageSize;
+  const pageItems=filteredJourneys.slice(start,end);
+  pageItems.forEach(j=>{
+    const card=document.createElement("div");
+    card.className="card";
+    card.onclick=()=>bookJourney(j.id);
+    card.innerHTML=`
+      <div class="card-header">
+        <span>${j.type==="Train"?"🚆":j.type==="Bus"?"🚌":"✈️"}</span>
+      </div>
+      <div class="card-body">
+        <div class="route">${j.from} → ${j.to}</div>
+        <div class="sub-text"><b>Vehicle No:</b> ${j.vehicleNo}</div>
+        <div class="sub-text"><b>Type:</b> ${j.type}</div>
+        <div class="sub-text"><b>Operator:</b> ${j.operator}</div>
+        <div class="sub-text"><b>Date:</b> ${j.date}</div>
+        <div class="sub-text"><b>Time:</b> ${j.time}</div>
+        <div class="sub-text"><b>Seats Left:</b> ${j.seatsLeft}</div>
+        <div class="price">₹${j.price}</div>
+      </div>
+      <div class="card-footer">
+        <button type="button" onclick="event.stopPropagation(); bookJourney(${j.id})">Book Now</button>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+function renderPagination(){
+  const pagination=document.getElementById("pagination");
+  pagination.innerHTML="";
+  const totalPages=Math.max(1,Math.ceil(filteredJourneys.length/pageSize));
+  for(let i=1;i<=totalPages;i++){
+    const btn=document.createElement("button");
+    btn.className="page-btn"+(i===currentPage?" active":"");
+    btn.textContent=i;
+    btn.addEventListener("click",()=>{currentPage=i;renderJourneys();renderPagination();});
+    pagination.appendChild(btn);
+  }
+}
+function applyFilters(){
+  const fromValue=document.getElementById("fromInput").value.trim().toLowerCase();
+  const toValue=document.getElementById("toInput").value.trim().toLowerCase();
+  const dateValue=document.getElementById("dateInput").value;
+  filteredJourneys=journeys.filter(j=>{
+    if(activeType!=="all" && j.type!==activeType)return false;
+    if(fromValue && !j.from.toLowerCase().includes(fromValue))return false;
+    if(toValue && !j.to.toLowerCase().includes(toValue))return false;
+    if(dateValue && j.date!==dateValue)return false;
+    return true;
+  });
+  currentPage=1;
+  renderJourneys();
+  renderPagination();
+}
+document.getElementById("searchForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  applyFilters();
+});
+document.querySelectorAll(".chip").forEach(chip=>{
+  chip.addEventListener("click",()=>{
+    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    activeType=chip.getAttribute("data-type");
+    applyFilters();
+  });
+});
+function bookJourney(id){
+  const selected=journeys.find(j=>j.id===id);
+  if(!selected){
+    alert("Journey not found.");
+    return;
+  }
+  localStorage.setItem("selectedJourney",JSON.stringify(selected));
+  window.location.href="booking.html";
+}
+const menuBtn=document.getElementById("menuBtn");
+const sideMenu=document.getElementById("sideMenu");
+const overlay=document.getElementById("overlay");
+function openMenu(){sideMenu.classList.add("open");overlay.classList.add("show");}
+function closeMenu(){sideMenu.classList.remove("open");overlay.classList.remove("show");}
+menuBtn.addEventListener("click",openMenu);
+overlay.addEventListener("click",()=>{closeMenu();hideUserPopup();});
+const userIcon=document.getElementById("userIcon");
+const userPopup=document.getElementById("userPopup");
+function hideUserPopup(){userPopup.classList.remove("show");}
+userIcon.addEventListener("click",e=>{e.stopPropagation();userPopup.classList.toggle("show");});
+document.addEventListener("click",e=>{
+  if(!userPopup.contains(e.target) && e.target!==userIcon){hideUserPopup();}
+  if(!sideMenu.contains(e.target) && e.target!==menuBtn && e.target!==overlay){closeMenu();}
+});
+function loadUser(){
+  const current=localStorage.getItem("currentUser");
+  const usernameText=document.getElementById("usernameText");
+  const nameDetail=document.getElementById("userNameDetail");
+  const emailDetail=document.getElementById("userEmailDetail");
+  if(current){
+    const user=JSON.parse(current);
+    usernameText.textContent=user.name||"User";
+    userIcon.textContent=(user.name||"U").charAt(0).toUpperCase();
+    nameDetail.textContent="Name: "+(user.name||"User");
+    emailDetail.textContent="Email: "+(user.email||"-");
+  }else{
+    usernameText.textContent="Guest";
+    userIcon.textContent="U";
+    nameDetail.textContent="Name: Guest";
+    emailDetail.textContent="Email: -";
+  }
+}
+function loadTicketCounts(){
+  const bookings=JSON.parse(localStorage.getItem("bookings")||"[]");
+  const ordered=document.getElementById("orderedInfo");
+  const success=document.getElementById("successInfo");
+  if(bookings.length===0){
+    ordered.textContent="No tickets ordered yet.";
+    success.textContent="No successful tickets yet.";
+  }else{
+    ordered.textContent="Total tickets ordered: "+bookings.length;
+    const successCount=bookings.filter(b=>b.status==="success").length;
+    success.textContent="Successful tickets: "+successCount;
+  }
+}
+document.getElementById("orderedBtn").addEventListener("click",()=>{
+  window.location.href="orderedTickets.html";
+});
+document.getElementById("successBtn").addEventListener("click",()=>{
+  window.location.href="successfulTickets.html";
+});
+loadUser();
+loadTicketCounts();
+applyFilters();
+</script>
+</body>
+</html>

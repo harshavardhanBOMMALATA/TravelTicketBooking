@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Travel Booking – Booking</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#f5f7fb;color:#222;padding-bottom:40px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#ffffff;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.header-left{display:flex;align-items:center;gap:10px}
+.back-btn{font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;border:none;background:#e1ecff;color:#007bff}
+.back-btn:hover{background:#c7ddff}
+.logo-title{font-size:22px;font-weight:bold;color:#007bff}
+.header-right{font-size:14px;font-weight:bold}
+.main{padding:20px}
+.page-title{font-size:22px;font-weight:bold;margin-bottom:15px}
+.booking-wrapper{display:flex;flex-wrap:wrap;gap:20px}
+.summary-card,.form-card{background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);padding:18px;flex:1 1 260px;min-width:260px}
+.summary-title{font-size:18px;font-weight:bold;margin-bottom:8px}
+.summary-row{font-size:14px;margin-bottom:6px}
+.summary-row b{color:#000}
+.price-main{font-size:20px;font-weight:bold;color:#007bff;margin-top:10px}
+
+.section-label{font-size:15px;font-weight:bold;margin:10px 0 6px}
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:14px;margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;font-size:14px}
+
+.passenger-card{border:1px solid #e0e0e0;border-radius:8px;padding:10px;margin-bottom:8px;background:#fafbff}
+.passenger-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.passenger-header span{font-weight:bold;font-size:14px}
+.remove-btn{border:none;background:transparent;color:#c00;font-size:12px;cursor:pointer}
+
+button.primary{width:100%;padding:10px;border:none;border-radius:8px;background:#007bff;color:#fff;font-size:16px;cursor:pointer;margin-top:10px}
+button.primary:hover{background:#005fcc}
+
+button.secondary{width:100%;padding:8px;border:1px dashed #007bff;border-radius:8px;background:#e9f2ff;color:#007bff;font-size:14px;cursor:pointer}
+button.secondary:hover{background:#d4e6ff}
+
+.error{color:red;font-size:13px;margin-top:4px}
+.info-text{font-size:13px;color:#555;margin-top:6px}
+
+.empty-msg{text-align:center;margin-top:40px;font-size:16px}
+.empty-msg a{color:#007bff;text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="header">
+<div class="header-left">
+<button class="back-btn" onclick="window.location.href='home.html'">&#8592; Back</button>
+<div class="logo-title">Travel Booking</div>
+</div>
+<div class="header-right">Booking Page</div>
+</header>
+
+<main class="main">
+<h1 class="page-title">Confirm Your Booking</h1>
+
+<div id="emptyState" class="empty-msg" style="display:none;">
+No journey selected. <a href="home.html">Go back</a>
+</div>
+
+<div id="bookingSection" class="booking-wrapper" style="display:none;">
+<div class="summary-card" id="journeySummary"></div>
+
+<div class="form-card">
+<div class="section-label">Contact Number</div>
+<input type="tel" id="contact" maxlength="10" placeholder="Enter contact number">
+
+<div class="section-label">Passengers</div>
+<div id="passengersContainer"></div>
+
+<button type="button" class="secondary" id="addPassengerBtn">+ Add Passenger</button>
+
+<div id="formMessage"></div>
+
+<button type="button" class="primary" id="proceedBtn">Proceed to Payment</button>
+
+<p class="info-text">No real payment. Demo purpose only.</p>
+</div>
+</div>
+</main>
+
+<script>
+let journey=null;
+let passengerCount=0;
+
+function loadJourney(){
+  const data=localStorage.getItem("selectedJourney");
+
+  if(!data){
+    document.getElementById("emptyState").style.display="block";
+    return;
+  }
+
+  journey=JSON.parse(data);
+  document.getElementById("bookingSection").style.display="flex";
+
+  document.getElementById("journeySummary").innerHTML=`
+    <div class="summary-title">${journey.from} → ${journey.to}</div>
+    <div class="summary-row"><b>Mode:</b> ${journey.type}</div>
+    <div class="summary-row"><b>Vehicle No:</b> ${journey.vehicleNo}</div>
+    <div class="summary-row"><b>Date:</b> ${journey.date}</div>
+    <div class="summary-row"><b>Time:</b> ${journey.time}</div>
+    <div class="summary-row"><b>Seats Left:</b> ${journey.seatsLeft}</div>
+    <div class="price-main">₹${journey.price} per passenger</div>
+  `;
+}
+
+function seatOptions(){
+  if(journey.type==="Bus")
+    return ["Window","Aisle","Upper Sleeper","Lower Sleeper"];
+  if(journey.type==="Flight")
+    return ["Economy","Business","VIP"];
+  return ["General","Sleeper","S1","S2","S3"];
+}
+
+function addPassenger(){
+  passengerCount++;
+
+  const container=document.getElementById("passengersContainer");
+  const div=document.createElement("div");
+  div.className="passenger-card";
+  div.dataset.id=passengerCount;
+
+  div.innerHTML=`
+    <div class="passenger-header">
+      <span>Passenger ${passengerCount}</span>
+      <button class="remove-btn" onclick="removePassenger(${passengerCount})">Remove</button>
+    </div>
+
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" class="p-name">
+    </div>
+
+    <div class="form-group">
+      <label>Age</label>
+      <input type="number" class="p-age" min="1" max="120">
+    </div>
+
+    <div class="form-group">
+      <label>Gender</label>
+      <select class="p-gender">
+        <option value="">Select</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Seat Type</label>
+      <select class="p-seat">
+        <option value="">Select Seat</option>
+        ${seatOptions().map(s=>`<option>${s}</option>`).join("")}
+      </select>
+    </div>
+  `;
+
+  container.appendChild(div);
+}
+
+function removePassenger(id){
+  const card=document.querySelector(`[data-id="${id}"]`);
+  if(card) card.remove();
+}
+
+function proceed(){
+  const msg=document.getElementById("formMessage");
+  msg.textContent="";
+
+  const contact=document.getElementById("contact").value.trim();
+  if(!contact){
+    msg.className="error";
+    msg.textContent="Enter contact number";
+    return;
+  }
+
+  const cards=document.querySelectorAll(".passenger-card");
+  if(cards.length===0){
+    msg.className="error";
+    msg.textContent="Add at least one passenger";
+    return;
+  }
+
+  let passengers=[];
+
+  for(const c of cards){
+    let name=c.querySelector(".p-name").value.trim();
+    let age=c.querySelector(".p-age").value.trim();
+    let gender=c.querySelector(".p-gender").value;
+    let seat=c.querySelector(".p-seat").value;
+
+    if(!name || !age || !gender || !seat){
+      msg.className="error";
+      msg.textContent="Fill all passenger details";
+      return;
+    }
+
+    passengers.push({name,age,gender,seat});
+  }
+
+  const bookingData={
+    journey,
+    contact,
+    passengers,
+    totalPassengers:passengers.length,
+    totalPrice:passengers.length * journey.price
+  };
+
+  localStorage.setItem("pendingBooking",JSON.stringify(bookingData));
+  window.location.href="payment.html";
+}
+
+document.getElementById("addPassengerBtn").onclick=addPassenger;
+document.getElementById("proceedBtn").onclick=proceed;
+
+loadJourney();
+addPassenger();
+</script>
+
+</body>
+</html>
